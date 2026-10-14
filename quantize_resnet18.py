@@ -75,10 +75,16 @@ test_transform = transforms.Compose([
 # Downloading the data if necessary, and then extracting the data to the CPU
 # RAM as a numpy array
 train_set = torchvision.datasets.CIFAR10(
-    root=DATA_DIR, train=True, download=True, transform=train_transform
+    root=DATA_DIR,
+    train=True,
+    download=True,
+    transform=train_transform
 )
 test_set = torchvision.datasets.CIFAR10(
-    root=DATA_DIR, train=False, download=True, transform=test_transform
+    root=DATA_DIR,
+    train=False,
+    download=True,
+    transform=test_transform
 )
 
 train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True,
@@ -88,8 +94,12 @@ test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False,
 
 # Calibration data: TRAIN images but with the test transform (no random crop/flip),
 # shuffled so each calibration run sees a random subset. Never use the test set here.
+# Calibration data: training images with test transforms (no augmentation)
 calib_set = torchvision.datasets.CIFAR10(
-    root=DATA_DIR, train=True, download=True, transform=test_transform
+    root=DATA_DIR,
+    train=True,
+    download=True,
+    transform=test_transform
 )
 calib_loader = DataLoader(calib_set, batch_size=BATCH_SIZE, shuffle=True,
                           num_workers=2, pin_memory=True)
