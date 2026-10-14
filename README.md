@@ -53,4 +53,4 @@ This repository is being prepared for reproducible experiments in neural network
 - Automated comparison of uniform and mixed-precision configurations
 - Reproducible accuracy and model-size reports
 - Inference benchmarking on supported hardware backends
-
+- Evaluation of exported models using OpenVINO
