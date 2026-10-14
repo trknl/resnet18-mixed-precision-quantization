@@ -1,5 +1,4 @@
 import os
-from pdb import run
 import torch
 import torch.nn as nn
 import torchvision.models as models
@@ -11,12 +10,12 @@ import torch.nn.utils.fusion as fusion
 import copy
 from torch.utils.data import DataLoader
 import torchvision
-import torchvision.models as models
 import torchvision.transforms as transforms
 from torchvision.models.resnet import BasicBlock
 from brevitas.quant.scaled_int import Int8WeightPerChannelFloat
 from brevitas.quant.scaled_int import Int8WeightPerChannelFloatMSE
 from brevitas.graph.calibrate import calibration_mode
+from pathlib import Path
 
 # Weight quantizer used for all conv / linear layers built by make_quant_conv /
 # make_quant_linear. Switch between the two to compare:
@@ -30,16 +29,26 @@ WEIGHT_QUANT = Int8WeightPerChannelFloatMSE
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-DATA_DIR = ".\data"
-CHECKPOINT_PATH = r"C:\Users\MONSTER\Desktop\Quantization\Workflow Step 2\importing models\Transfer Learning\resnet18_cifar10_unfrozen_layer4_fc_best.pth"
+PROJECT_DIR = Path(__file__).resolve().parent
+
+DATA_DIR = PROJECT_DIR / "data"
+
+# Supply your own trained checkpoint locally; do not upload it to GitHub.
+CHECKPOINT_PATH = Path(
+    os.environ.get(
+        "RESNET18_CHECKPOINT",
+        str(PROJECT_DIR / "checkpoints" /
+            "resnet18_cifar10_unfrozen_layer4_fc_best.pth")
+    )
+)
+
+OUTPUT_DIR = PROJECT_DIR / "outputs"
+SAVE_PATH = OUTPUT_DIR / "quantized_resnet18.pth"
+ONNX_PATH = OUTPUT_DIR / "quantized_resnet18.onnx"
+
 NUM_CLASSES = 10
 BATCH_SIZE = 64
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-
-SAVE_PATH = r"C:\Users\MONSTER\Desktop\Quantization\quantized_resnet18.pth"
-ONNX_PATH = r"C:\Users\MONSTER\Desktop\Quantization\quantized_resnet18.onnx"
 
 # ---------------------------------------------------------------------------
 # Data: CIFAR-10, resized to 224x224, normalized with ImageNet stats
@@ -489,7 +498,7 @@ def run_single_layer(fused_model, block_idx, block_item_idx=None, layer_name="co
 # ---------------------------------------------------------------------------
 def save_quantized_model(q_model, path, weight_bits, act_bits, accuracy=None):
     """Saves weights + calibrated scales + the info needed to rebuild the model."""
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     torch.save({
         "model_state_dict": q_model.state_dict(),   # includes calibrated activation scales
         "weight_bit_width": weight_bits,            # list of 21 ints

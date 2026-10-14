@@ -220,4 +220,11 @@ __marimo__/
 .streamlit/secrets.toml
 .vs/
 
+# Local datasets and model checkpoints
+data/
+checkpoints/
+outputs/
+*.pth
+*.onnx
+
 
